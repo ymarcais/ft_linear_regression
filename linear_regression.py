@@ -2,8 +2,8 @@ from dataclasses import dataclass, field
 
 @dataclass
 class Prediction:
-    theta_0: float = 0.0
-    theta_1: float = 0.0
+    theta0: float = 0.0
+    theta1: float = 0.0
 
     def get_integer(self, prompt):
         while True:
@@ -15,7 +15,7 @@ class Prediction:
     
     def compute_prediction(self):
         x = self.get_integer("Enter the mileage of your car:")
-        y_hat = self.theta_0 + self.theta_1 * x
+        y_hat = self.theta0 + self.theta1 * x
         return y_hat
 
 def main():
