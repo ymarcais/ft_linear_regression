@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 @dataclass
 class GradientDescent:
     #dataset: pd.DataFrame = field(default=None)
-    alpha : float = 0.0005
+    alpha : float = 0.0000001
     max_iter : int = 60000
 
-    theta = np.array([2.0, 0.0])
+    theta = np.array([8000.0, -0.032])
     theta = theta.reshape((-1, 1))
     
     # add a column full of one and convert to numpy array
@@ -28,7 +28,7 @@ class GradientDescent:
         #print("X shape", np.shape(X))
         #print("X value", X)
         #print("theta value", theta)
-        self.theta = self.theta
+        #self.theta = self.theta
         #print(theta)
         y_hat = np.matmul(X, self.theta)
         #print("y_hat", y_hat)
@@ -99,27 +99,28 @@ class GradientDescent:
 def main():
     dataset = pd.read_csv('data.csv')
     gd = GradientDescent()
-    x = np.array([[12.4956442], [21.5007972], [31.5527382], [48.9145838], [57.5088733]])
-    y = np.array([[37.4013816], [36.1473236], [45.7655287], [46.6793434], [59.5585554]])
-    #x = dataset['km']
-    #x = x.values.reshape((-1, 1))
+    #x = np.array([[12.4956442], [21.5007972], [31.5527382], [48.9145838], [57.5088733]])
+    #y = np.array([[37.4013816], [36.1473236], [45.7655287], [46.6793434], [59.5585554]])
+    x = dataset['km']
+    x = x.values.reshape((-1, 1))
     #print("x", x)
-    #y = dataset['price']
-    #y = y.values.reshape((-1, 1))
+    y = dataset['price']
+    y = y.values.reshape((-1, 1))
     #print("y", y)
     X = gd.add_one_column(x)
     #theta = np.array([3, 2]).reshape((-1, 1))
-    y_hat = gd.predict_(x)
+    #y_hat = gd.predict_(x)
     #print("y_hat", y_hat)
     #print("shape y_hat", np.shape(y_hat))
     #print("theta", np.shape(theta))
     alpha = gd.alpha
     max_iter = gd.max_iter
-    grad = gd.gradient(x, y)
+    #grad = gd.gradient(x, y)
     #print("grad", np.shape(grad))
     #print("grad", np.size(grad))
+    #theta = gd.descent(x, y, alpha, max_iter)
     theta = gd.descent(x, y, alpha, max_iter)
-    print("theta: ", theta)
+    #print("theta: ", gd.theta)
     gd.plot(x, y, theta)
 
             
