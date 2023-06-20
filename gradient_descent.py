@@ -2,131 +2,129 @@ import pandas as pd
 import numpy as np
 from dataclasses import dataclass, field
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+from sklearn.preprocessing import StandardScaler #pip install scikit-learn
 
 @dataclass
 class GradientDescent:
-    #dataset: pd.DataFrame = field(default=None)
-    alpha : float = 0.0000001
-    max_iter : int = 60000
+	thetas: np.ndarray
+	alpha: np.ndarray
+	max_iter: int
 
-    theta = np.array([8000.0, -0.032])
-    theta = theta.reshape((-1, 1))
-    
-    # add a column full of one and convert to numpy array
-    def add_one_column(self, x):
-        x = np.asarray(x)
-        if isinstance(x, (np.ndarray, pd.DataFrame)) and x.size != 0:
-            X = np.column_stack((np.ones(len(x)), x))
-            return X
-        else:
-            print("ERROR: x Numpy Array")
-            exit()
+	# add a column full of one and convert to numpy array
+	def add_one_column(self, x):
+		x = np.asarray(x)
+		if isinstance(x, (np.ndarray, pd.DataFrame)) and x.size != 0:
+			X = np.column_stack((np.ones(len(x)), x))
+			return X
+		else:
+			print("ERROR: x Numpy Array")
+			exit()
 
-    #y_hat = X * theta
-    def predict_(self, x):
-        X = self.add_one_column(x)
-        #print("X shape", np.shape(X))
-        #print("X value", X)
-        #print("theta value", theta)
-        #self.theta = self.theta
-        #print(theta)
-        y_hat = np.matmul(X, self.theta)
-        #print("y_hat", y_hat)
-        return y_hat
-       
-       
-    #tmp_theta(0) = (1/m)sum((hθ(x(i) ) − y(i)))
-    #tmp_theta(0) = (1/m)sum((hθ(x(i) ) − y(i))) * 1 
-    #tmp_theta(0) = (1/m)sum((hθ(x(i) ) − y(i))) * x0(i) // rewrite 1 as x0(i) :
-    #tmp_theta(1) = (1/m)sum((hθ(x(i) ) − y(i))) * x1(i)
-    #tmp_theta(j) = (1/m)sum((hθ(x(i) ) − y(i))) * xj(i)
-    #Vectorisation:
-        # hθ (x) = X' * θ    // hθ (x) = θ0 + θ1 x
-        # tmp_theta(j) = (1 / m) * (X' * θ - y) * X'(j)
-        # tmp_theta = (1 / m) * transpose(X') * (X' * θ - y) 
-    def gradient(self, x, y):
-        m = len(x)
-        X = self.add_one_column(x)
-        Xt = np.transpose(X)
-        #print("Xt value", Xt)
-        #print("Xt", np.shape(Xt))
-        y_hat = self.predict_(x)
-        #print("y_hat", np.shape(y_hat))
-        cost = y_hat - y
-        #print("y_hat value", y_hat)
-        #print("y_hat", np.shape(y_hat))
-        #print("y value", y)
-        #print("cost", cost)
-        #print("cost", np.shape(cost))
-        grad = (1 / m) * np.dot(Xt, cost)
-        #print("grad", grad)
-        return grad
+	#y_hat = X * theta
+	def predict_(self, x):
+		X = self.add_one_column(x)
+		y_hat = np.matmul(X, self.thetas)
+		return y_hat
 
-    #descent by iteration    
-    def descent(self, x, y, alpha, max_iter):
-        i = 0
-        while i < max_iter:
-            #plt.plot(x, self.predict_(x), color='red')
-            grad = self.gradient(x, y)
-            self.theta  = self.theta - alpha * grad
-            #print("theta", np.shape(theta))
-            print("theta value", self.theta)
-            i += 1
-        return self.theta
+	#tmp_theta(0) = (1/m)sum((hθ(x(i) ) − y(i)))
+	#tmp_theta(0) = (1/m)sum((hθ(x(i) ) − y(i))) * 1 
+	#tmp_theta(0) = (1/m)sum((hθ(x(i) ) − y(i))) * x0(i) // rewrite 1 as x0(i) :
+	#tmp_theta(1) = (1/m)sum((hθ(x(i) ) − y(i))) * x1(i)
+	#tmp_theta(j) = (1/m)sum((hθ(x(i) ) − y(i))) * xj(i)
+	#Vectorisation:
+		# hθ (x) = X' * θ    // hθ (x) = θ0 + θ1 x
+		# tmp_theta(j) = (1 / m) * (X' * θ - y) * X'(j)
+		# tmp_theta = (1 / m) * transpose(X') * (X' * θ - y) 
+	def simple_gradient(self, x, y):
+		m = len(x)
+		X = self.add_one_column(x)
+		y_hat = self.predict_(x)
+		cost = (y_hat - y)
+		print("cost", np.sum(cost))
+		gradient = (1/(2 * m)) * np.dot(X.T, cost)
+		return gradient
 
-    '''def descent(self, x, y, alpha, max_iter):
-        i = 0
-        y_hat0 = 2**36
-        X = self.add_one_column(x)
-        grad = self.gradient(x, y)
-        self.theta  = self.theta - alpha * grad
-        y_hat1 = np.dot(X, self.theta)
-        while np.any(y_hat1 < y_hat0):
-            y_hat0 = y_hat1
-            grad = self.gradient(x, y)
-            self.theta = self.theta - alpha * grad
-            print("theta value", self.theta)
-            X = self.add_one_column(x)
-            y_hat1 = np.dot(X, self.theta)
-        return self.theta'''
+	def fit_(self, x, y, thetas, alpha, max_iter, epsilon=1e-5):
+		i= 0
+		m = len(x)
+		prev_cost = 10.0
+		alpha = self.alpha
+		alpha = np.reshape(alpha, (2, 1))
+		while i < max_iter:
+			gradient = self.simple_gradient(x, y)
+			#print("gradient", gradient)
+			thetas -= alpha * gradient
+			i += 1
+			#print("thetas: ", thetas)
+			y_hat = self.predict_(x)
+			current_cost = (1 / (2 * m)) * np.sum((y_hat - y)**2)
+			if current_cost - prev_cost < epsilon :
+				print("Converged at iteration", i+1)
+				break
+			alpha *= 0.99999
+			#print("current cost: ", current_cost)
+		return thetas
 
-    def plot(self, x, y, theta):
-        plt.plot(x, y, 'o', color = 'blue')
-        plt.plot(x, self.predict_(x), color='red')
-        plt.show()
-    
+	def plot(self, x_scaled, x, y, thetas, new_y_hat):
+		fig, axs = plt.subplots(1, 2)
+		axs[0].plot(x_scaled, y, 'o', color='blue')
+		axs[0].set_title("Linear Regression")
+		axs[0].set_xlabel("km - x normalized")
+		axs[0].set_ylabel("Price")
+		axs[0].xaxis.set_major_formatter(ticker.StrMethodFormatter('{x:,.0f}'))
+		axs[0].yaxis.set_major_formatter(ticker.StrMethodFormatter('{x:,.0f}'))
+		axs[0].plot(x_scaled, self.predict_(x_scaled), color='red')
+
+		axs[1].plot(x, y, 'o', color='blue')
+		axs[1].plot([50000], new_y_hat, 'o', color='red')
+		axs[1].set_title("Prediction")
+		axs[1].set_xlabel("km")
+		axs[1].set_ylabel("Price")
+		axs[1].xaxis.set_major_formatter(ticker.StrMethodFormatter('{x:,.1f}'))
+		axs[1].yaxis.set_major_formatter(ticker.StrMethodFormatter('{x:,.0f}'))
+
+		plt.tight_layout()
+		plt.show()
 
 def main():
-    dataset = pd.read_csv('data.csv')
-    gd = GradientDescent()
-    #x = np.array([[12.4956442], [21.5007972], [31.5527382], [48.9145838], [57.5088733]])
-    #y = np.array([[37.4013816], [36.1473236], [45.7655287], [46.6793434], [59.5585554]])
-    x = dataset['km']
-    x = x.values.reshape((-1, 1))
-    #print("x", x)
-    y = dataset['price']
-    y = y.values.reshape((-1, 1))
-    #print("y", y)
-    X = gd.add_one_column(x)
-    #theta = np.array([3, 2]).reshape((-1, 1))
-    #y_hat = gd.predict_(x)
-    #print("y_hat", y_hat)
-    #print("shape y_hat", np.shape(y_hat))
-    #print("theta", np.shape(theta))
-    alpha = gd.alpha
-    max_iter = gd.max_iter
-    #grad = gd.gradient(x, y)
-    #print("grad", np.shape(grad))
-    #print("grad", np.size(grad))
-    #theta = gd.descent(x, y, alpha, max_iter)
-    theta = gd.descent(x, y, alpha, max_iter)
-    #print("theta: ", gd.theta)
-    gd.plot(x, y, theta)
+	dataset = pd.read_csv('data.csv')
+	thetas = np.array([0, 0]).reshape((-1, 1))
+	thetas = thetas.astype('float64')
+	max_iter = 50000
+	alpha = np.array([0.001, 0.000340])
+	alpha = alpha.astype('float64')
+	gd = GradientDescent(thetas, alpha, max_iter)
+	x = dataset['km']
+	x = x.values.reshape((-1, 1))
+	y = dataset['price']
+	y = y.values.reshape((-1, 1))
+	m = len(x)
+	#y_hat = gd.predict_(x)
+	#normalization of x
+	scaler = StandardScaler()
+	x_scaled = scaler.fit_transform(x)
+	max_iter = gd.max_iter
+	thetas = gd.fit_(x_scaled, y, thetas, alpha, max_iter)
+	print("thetas:", thetas)
+	
+	'''thetas[0] = 10000
+	thetas[1] = -0.025
+	y_hat = gd.predict_(x)
+	#theo_cost = (1 / (2 * m)) * np.sum((y_hat - y)**2)
+	theo_cost = np.sum((y_hat - y))
+	print("theo_cost =", theo_cost)'''
+	new_predict = np.array([50000]).reshape((-1, 1))
+	new_predict = scaler.transform(new_predict)
+	new_y_hat = gd.predict_(new_predict)
+	print("new_predict", new_predict)
+	print("new_y_hat", new_y_hat)
+	gd.plot(x_scaled, x, y, thetas, new_y_hat)
 
-            
+
 if __name__ == "__main__":
-    main()  
-    
+	main()
+
 
 
 
