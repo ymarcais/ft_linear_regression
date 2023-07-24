@@ -22,4 +22,4 @@ able to use the algorithm with any other dataset.
 		# tmp_theta = (1 / m) * transpose(X') * (X' * θ - y)
   - gradient descent()
 	def fit_(self, x, y, thetas, alpha, max_iter, epsilon=1e-3):
-<img src="./pair_plot.png" alt="Alt text" title="Final product" style="display: inline-block; max-width: 20px">
+<img src="./prediction_linear_regression.png" alt="Alt text" title="Final product" style="display: inline-block; max-width: 20px">
