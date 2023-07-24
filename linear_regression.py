@@ -5,6 +5,7 @@ class Prediction:
     theta0: float = 0.0
     theta1: float = 0.0
 
+    #Create a promot
     def get_integer(self, prompt):
         while True:
             try:
@@ -13,6 +14,7 @@ class Prediction:
             except:
                 print("Invalid input. Please enter an integer.")
     
+    #Make prediciton
     def compute_prediction(self):
         x = self.get_integer("Enter the mileage of your car:")
         y_hat = self.theta0 + self.theta1 * x
