@@ -27,6 +27,8 @@ class GradientDescent:
 		X = self.add_one_column(x)
 		y_hat = np.matmul(X, self.thetas)
 		return y_hat
+
+	#ŷ = hθ(x)
 	#tmp_theta(0) = (1/m)sum((hθ(x(i) ) − y(i)))
 	#tmp_theta(0) = (1/m)sum((hθ(x(i) ) − y(i))) * 1 
 	#tmp_theta(0) = (1/m)sum((hθ(x(i) ) − y(i))) * x0(i) // rewrite 1 as x0(i) :
