@@ -8,21 +8,12 @@ from sklearn.preprocessing import StandardScaler #pip install scikit-learn
 # dataclass init instances
 @dataclass
 class GradientDescent:
+	thetas: np.ndarray
 	alpha: np.ndarray
-	thetas: list[float] = field(default_factory=lambda: [0, 0])
-	max_iter: int = 50000
-
-	def get_data(self, path):
-		dataset = pd.read_csv('data.csv')
-		#self.thetas = np.zeros(2)
-		self.thetas = np.array([0, 0]).reshape((-1, 1))
-		self.thetas = self.thetas.astype('float64')
-		return dataset
+	max_iter: int
 
 	# add a column full of one and convert to numpy array
-	def add_one_column(self, dataset):
-		x = dataset['km']
-		x = x.values.reshape((-1, 1))
+	def add_one_column(self, x):
 		x = np.asarray(x)
 		if isinstance(x, (np.ndarray, pd.DataFrame)) and x.size != 0:
 			X = np.column_stack((np.ones(len(x)), x))
@@ -32,12 +23,11 @@ class GradientDescent:
 			exit()
 
 	#y prediction: y_hat = X * theta
-	def predict_(self, dataset):
-		X = self.add_one_column(dataset)
+	def predict_(self, x):
+		X = self.add_one_column(x)
 		y_hat = np.matmul(X, self.thetas)
+		print(f"y_hat : {y_hat}")
 		return y_hat
-
-	#ŷ = hθ(x)
 	#tmp_theta(0) = (1/m)sum((hθ(x(i) ) − y(i)))
 	#tmp_theta(0) = (1/m)sum((hθ(x(i) ) − y(i))) * 1 
 	#tmp_theta(0) = (1/m)sum((hθ(x(i) ) − y(i))) * x0(i) // rewrite 1 as x0(i) :
@@ -46,8 +36,8 @@ class GradientDescent:
 		# hθ (x) = X' * θ    // hθ (x) = θ0 + θ1 x
 		# tmp_theta(j) = (1 / m) * (X' * θ - y) * X'(j)
 		# tmp_theta = (1 / m) * transpose(X') * (X' * θ - y) 
-	def simple_gradient(self, dataset, y):
-		m = len(dataset)
+	def simple_gradient(self, x, y):
+		m = len(x)
 		X = self.add_one_column(x)
 		y_hat = self.predict_(x)
 		cost = (y_hat - y)
@@ -55,15 +45,15 @@ class GradientDescent:
 		return gradient
 
 	# gradient descent
-	def gradient_descent(self, x, y, alpha, epsilon=1e-3):
+	def fit_(self, x, y, thetas, alpha, max_iter, epsilon=1e-3):
 		i= 0
 		m = len(x)
 		prev_cost = 10.0
 		alpha = self.alpha
 		alpha = np.reshape(alpha, (2, 1))
-		while i < self.max_iter:
+		while i < max_iter:
 			gradient = self.simple_gradient(x, y)
-			self.thetas -= alpha * gradient
+			thetas -= alpha * gradient
 			i += 1
 			y_hat = self.predict_(x)
 			current_cost = (1 / (2 * m)) * np.sum((y_hat - y)**2)
@@ -72,10 +62,9 @@ class GradientDescent:
 				break
 			alpha *= 0.99999
 			prev_cost = current_cost
-		return self.thetas
+		return thetas
 
-	#Chart with data and regression line
-	def plot(self, x_scaled, x, y, new_y_hat):
+	def plot(self, x_scaled, x, y, thetas, new_y_hat):
 		fig, axs = plt.subplots(1, 2)
 		axs[0].plot(x_scaled, y, 'o', color='blue')
 		axs[0].set_title("Linear Regression")
@@ -97,44 +86,27 @@ class GradientDescent:
 		plt.show()
 
 def main():
-	path = 'data.csv'
+	dataset = pd.read_csv('data.csv')
+	thetas = np.array([0, 0]).reshape((-1, 1))
+	thetas = thetas.astype('float64')
+	max_iter = 50000
 	alpha = np.array([0.001, 0.000340])
-	gd = GradientDescent(alpha = alpha)
-	dataset = gd.get_data(path)
-
-	y = dataset['price']
-	y = y.values.reshape((-1, 1))
-	scaler = StandardScaler()
-	x_scaled = scaler.fit_transform(x)
-	thetas = gd.gradient_descent(x_scaled, y, alpha)
-	new_predict = np.array([50000]).reshape((-1, 1))
-	new_predict = scaler.transform(new_predict)
-	new_y_hat = gd.predict_(new_predict)
-	gd.plot(x_scaled, x, y, new_y_hat)
-
-'''def main():
-	path = 'data.csv'
-	alpha = np.array([0.001, 0.000340])
-	gd = GradientDescent(alpha = alpha)
-	dataset = gd.get_data(path)
+	alpha = alpha.astype('float64')
+	gd = GradientDescent(thetas, alpha, max_iter)
 	x = dataset['km']
 	x = x.values.reshape((-1, 1))
 	y = dataset['price']
 	y = y.values.reshape((-1, 1))
+	m = len(x)
 	scaler = StandardScaler()
 	x_scaled = scaler.fit_transform(x)
-	thetas = gd.gradient_descent(x_scaled, y, alpha)
+	max_iter = gd.max_iter
+	thetas = gd.fit_(x_scaled, y, thetas, alpha, max_iter)
 	new_predict = np.array([50000]).reshape((-1, 1))
 	new_predict = scaler.transform(new_predict)
 	new_y_hat = gd.predict_(new_predict)
-	gd.plot(x_scaled, x, y, new_y_hat)
+	print(f"new hat shape: {new_y_hat}")
+	gd.plot(x_scaled, x, y, thetas, new_y_hat)
 
 if __name__ == "__main__":
 	main()
-
-
-
-
-
-
-

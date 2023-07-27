@@ -19,24 +19,21 @@ class GradientDescent:
 		return dataset
 
 	# add a column full of one and convert to numpy array
-	def add_one_column(self, path):
-		dataset = self.get_data(path)
-		x = dataset['km']
-		x = x.values.reshape((-1, 1))
-		x_scaled = StandardScaler().fit_transform(x)
+	def add_one_column(self, x):
+		x = np.asarray(x)
 		if isinstance(x, (np.ndarray, pd.DataFrame)) and x.size != 0:
-			X = np.column_stack((np.ones(len(x_scaled)), x_scaled))
+			X = np.column_stack((np.ones(len(x)), x))
 			return X
 		else:
-			print(f" km = {x}")
 			print("ERROR: x Numpy Array")
 			exit()
 
 	#X Scaled before prediction : y prediction: y_hat = X * theta
-	def predict_(self,path):
-		X = self.add_one_column(path)
+	def predict_(self, x):
+		X = self.add_one_column(x)
 		#X = StandardScaler().fit_transform(X)
 		y_hat = np.matmul(X, self.thetas) 
+		#print(f"y hat shape: {y_hat.shape}")
 		return y_hat
 
 	#ŷ = hθ(x)
@@ -60,7 +57,9 @@ class GradientDescent:
 		i= 0
 		prev_cost = 10.0
 		dataset = self.get_data(path)
-		X = self.add_one_column(path)
+		x = dataset['km']
+		x = x.values.reshape((-1, 1))
+		X = self.add_one_column(x)
 		m = len(X)
 		y = dataset['price']
 		y = y.values.reshape((-1, 1))
@@ -81,7 +80,7 @@ class GradientDescent:
 		return self.thetas
 
 	#Chart with data and regression line
-	def plot(self, path, new_y_hat):
+	def plot(self, path, new_predict):
 		fig, axs = plt.subplots(1, 2)
 		dataset = self.get_data(path)
 		x = dataset['km']
@@ -92,8 +91,12 @@ class GradientDescent:
 		y = dataset['price']
 		y = y.values.reshape((-1, 1))
 		print(f"y shape: {y.shape}")
-		thetas = self.gradient_descent(path, alpha)
-
+		self.thetas = self.gradient_descent(self, path, self.alpha)
+		new_predict = np.array([new_predict]).reshape((-1, 1))
+		new_predict = scaler.transform(new_predict)
+		printf(f"new_predict: {new_predict}")
+		new_y_hat = gd.predict_(new_predict)
+		
 		axs[0].plot(x_scaled, y, 'o', color='blue')
 		axs[0].set_title("Linear Regression")
 		axs[0].set_xlabel("km - x normalized")
@@ -103,7 +106,7 @@ class GradientDescent:
 		axs[0].plot(x_scaled, self.predict_(path), color='red')
 
 		axs[1].plot(x_scaled, y, 'o', color='blue')
-		axs[1].plot([50000], new_y_hat, 'o', color='red')
+		axs[1].plot([new_predict], new_y_hat, 'o', color='red')
 		axs[1].set_title("Prediction")
 		axs[1].set_xlabel("km")
 		axs[1].set_ylabel("Price")
@@ -115,15 +118,18 @@ class GradientDescent:
 
 def main():
 	path = 'data.csv'
+	thetas = np.array([0, 0]).reshape((-1, 1))
+	thetas = thetas.astype('float64')
+	#scaler = StandardScaler()
 	alpha = np.array([0.001, 0.000340])
+	new_predict = 5000
 	gd = GradientDescent(alpha = alpha)
-	gd.gradient_descent(path, alpha)
-	new_predict = np.array([50000]).reshape((-1, 1))
-	scaler = StandardScaler()
-	new_predict = scaler.fit_transform(new_predict)
-	new_y_hat = gd.predict_(new_predict)
-
-	gd.plot(path, new_y_hat)
+	#gd.gradient_descent(path, alpha)
+	#thetas = gd.gradient_descent(path, alpha)
+	#new_predict = np.array([50000]).reshape((-1, 1))
+	#new_predict = scaler.fit_transform(new_predict)
+	#new_y_hat = gd.predict_(new_predict)
+	gd.plot(path, new_predict)
 
 '''def main():
 	path = 'data.csv'
