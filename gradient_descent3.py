@@ -8,7 +8,7 @@ from sklearn.preprocessing import StandardScaler #pip install scikit-learn
 # dataclass init instances
 @dataclass
 class GradientDescent:
-	alpha: np.ndarray
+	alpha: np.ndarray = np.array([0.001, 0.000340], dtype=np.float16)
 	thetas: list[float] = field(default_factory=lambda: [0, 0])
 	max_iter: int = 50000
 
@@ -29,11 +29,7 @@ class GradientDescent:
 	#X Scaled before prediction : y prediction: y_hat = X * theta
 	def predict_(self, x):
 		X = self.add_one_column(x)
-		#X = StandardScaler().fit_transform(X)
 		y_hat = np.matmul(X, self.thetas) 
-		#print(f"y hat shape: {y_hat.shape}")
-		print(f"X: {X}")
-		print(f"thetas: {self.thetas}")
 		return y_hat
 
 	#ŷ = hθ(x)
@@ -50,18 +46,19 @@ class GradientDescent:
 		m = len(x)
 		y_hat = self.predict_(x)
 		cost = (y_hat - y)
-		#print(f"cost : {cost}")
-		gradient = (1/(2 * m)) * np.dot(X.T, cost)
+		gradient = (1/(1 * m)) * np.dot(X.T, cost)
 		return gradient
 
 	# gradient descent
-	def gradient_descent(self, path, alpha, epsilon=1e-3):
+	def gradient_descent(self, path, epsilon=1e-3):
 		i= 0
 		prev_cost = 10.0
 		dataset = self.get_data(path)
 		x = dataset['km']
 		x = x.values.reshape((-1, 1))
-		m = len(x)
+		scaler = StandardScaler()
+		x_scaled = scaler.fit_transform(x)
+		m = len(x_scaled)
 		y = dataset['price']
 		y = y.values.reshape((-1, 1))
 		alpha = self.alpha
@@ -69,15 +66,12 @@ class GradientDescent:
 		self.thetas = np.array([0, 0]).reshape((-1, 1))
 		self.thetas = self.thetas.astype('float64')
 		while i < self.max_iter:
-			gradient = self.simple_gradient(x, y)
+			gradient = self.simple_gradient(x_scaled, y)
 			self.thetas -= alpha * gradient
-			#print(f"thetas : {self.thetas}")
-			#print(f"alpha : {alpha}")
-			#print(f"gradient : {gradient}")
+			print(f"thetas : {self.thetas}")
 			i += 1
-			y_hat = self.predict_(x)
+			y_hat = self.predict_(x_scaled)
 			current_cost = (1 / (2 * m)) * np.sum((y_hat - y)**2)
-			#print(f"current cost  = {current_cost}")
 			if abs(current_cost - prev_cost) < epsilon :
 				print("Converged at iteration", i+1)
 				break
@@ -92,67 +86,42 @@ class GradientDescent:
 		x = dataset['km']
 		x = x.values.reshape((-1, 1))
 		print(f"x shape: {x.shape}")
-		x_scaled = StandardScaler().fit_transform(x)
-		print(f"x_scale shape: {x_scaled.shape}")
+		#x_scaled = StandardScaler().fit_transform(x)
+		#print(f"x_scale shape: {x_scaled.shape}")
 		y = dataset['price']
 		y = y.values.reshape((-1, 1))
-		print(f"y shape: {y.shape}")
-
-		self.thetas = self.gradient_descent(path, self.alpha)
+		scaler = StandardScaler()
+		x_scaled = scaler.fit_transform(x)
+		self.thetas = self.gradient_descent(path)
 		new_predict = np.array([new_predict]).reshape((-1, 1))
-		new_predict = StandardScaler().transform(new_predict)
-		new_y_hat = gd.predict_(new_predict)
+		new_predict = scaler.transform(new_predict)
+		new_y_hat = self.predict_(new_predict)
 		
 		axs[0].plot(x_scaled, y, 'o', color='blue')
 		axs[0].set_title("Linear Regression")
 		axs[0].set_xlabel("km - x normalized")
 		axs[0].set_ylabel("Price")
-		axs[0].xaxis.set_major_formatter(ticker.StrMethodFormatter('{x_scaled:,.0f}'))
-		axs[0].yaxis.set_major_formatter(ticker.StrMethodFormatter('{x_scaled:,.0f}'))
-		axs[0].plot(x_scaled, self.predict_(path), color='red')
+		axs[0].xaxis.set_major_formatter(ticker.StrMethodFormatter('{x:,.0f}'))
+		axs[0].yaxis.set_major_formatter(ticker.StrMethodFormatter('{x:,.0f}'))
+		axs[0].plot(x_scaled, self.predict_(x_scaled), color='red')
 
 		axs[1].plot(x_scaled, y, 'o', color='blue')
-		axs[1].plot([new_predict], new_y_hat, 'o', color='red')
-		axs[1].set_title("Prediction")
-		axs[1].set_xlabel("km")
+		axs[1].plot(new_predict, new_y_hat, 'o', color='red')
+		axs[1].set_title(f"Price Prediction = {new_y_hat[0][0]:,.2f} Euros" )
+		axs[1].set_xlabel("km - x normalized")
 		axs[1].set_ylabel("Price")
-		axs[1].xaxis.set_major_formatter(ticker.StrMethodFormatter('{x_scaled:,.0f}'))
-		axs[1].yaxis.set_major_formatter(ticker.StrMethodFormatter('{x_scaled:,.0f}'))
+		axs[1].xaxis.set_major_formatter(ticker.StrMethodFormatter('{x:,.0f}'))
+		axs[1].yaxis.set_major_formatter(ticker.StrMethodFormatter('{x:,.0f}'))
 
 		plt.tight_layout()
 		plt.show()
 
 def main():
 	path = 'data.csv'
-	#scaler = StandardScaler()
-	alpha = np.array([0.001, 0.000340])
-	alpha = alpha.astype('float16')
-	new_predict = 5000
-	gd = GradientDescent(alpha = alpha)
-	#gd.gradient_descent(path, alpha)
-	#thetas = gd.gradient_descent(path, alpha)
-	#new_predict = np.array([50000]).reshape((-1, 1))
-	#new_predict = scaler.fit_transform(new_predict)
-	#new_y_hat = gd.predict_(new_predict)
-	#gd.plot(path, new_predict)
-	gd.predict_([5000])
-
-'''def main():
-	path = 'data.csv'
-	alpha = np.array([0.001, 0.000340])
-	gd = GradientDescent(alpha = alpha)
-	dataset = gd.get_data(path)
-	x = dataset['km']
-	x = x.values.reshape((-1, 1))
-	y = dataset['price']
-	y = y.values.reshape((-1, 1))
-	scaler = StandardScaler()
-	x_scaled = scaler.fit_transform(x)
-	thetas = gd.gradient_descent(x_scaled, y, alpha)
-	new_predict = np.array([50000]).reshape((-1, 1))
-	new_predict = scaler.transform(new_predict)
-	new_y_hat = gd.predict_(new_predict)
-	gd.plot(x_scaled, x, y, new_y_hat)'''
+	new_predict = 50000
+	gd = GradientDescent()
+	gd.plot(path, new_predict)
+	#gd.predict_([new_predict])
 
 if __name__ == "__main__":
 	main()
