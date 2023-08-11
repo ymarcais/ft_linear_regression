@@ -30,4 +30,4 @@ able to use the algorithm with any other dataset.
   
 - gradient descent()
 	def fit_(self, x, y, thetas, alpha, max_iter, epsilon=1e-3):
-<img src="./linear_regression_n_prediction.png" alt="Alt text" title="Final product" style="display: inline-block; max-width: 20px">
+<img src="./prediction_linear_regression.png" alt="Alt text" title="Final product" style="display: inline-block; max-width: 20px">
