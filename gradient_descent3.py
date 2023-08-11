@@ -14,8 +14,6 @@ class GradientDescent:
 
 	def get_data(self, path):
 		dataset = pd.read_csv('data.csv')
-		self.thetas = np.array([0, 0]).reshape((-1, 1))
-		self.thetas = self.thetas.astype('float64')
 		return dataset
 
 	# add a column full of one and convert to numpy array
@@ -34,6 +32,8 @@ class GradientDescent:
 		#X = StandardScaler().fit_transform(X)
 		y_hat = np.matmul(X, self.thetas) 
 		#print(f"y hat shape: {y_hat.shape}")
+		print(f"X: {X}")
+		print(f"thetas: {self.thetas}")
 		return y_hat
 
 	#ŷ = hθ(x)
@@ -45,10 +45,12 @@ class GradientDescent:
 		# hθ (x) = X' * θ    // hθ (x) = θ0 + θ1 x
 		# tmp_theta(j) = (1 / m) * (X' * θ - y) * X'(j)
 		# tmp_theta = (1 / m) * transpose(X') * (X' * θ - y) 
-	def simple_gradient(self, X, y):
-		m = len(X)
-		y_hat = self.predict_(X)
+	def simple_gradient(self, x, y):
+		X = self.add_one_column(x)
+		m = len(x)
+		y_hat = self.predict_(x)
 		cost = (y_hat - y)
+		#print(f"cost : {cost}")
 		gradient = (1/(2 * m)) * np.dot(X.T, cost)
 		return gradient
 
@@ -59,17 +61,21 @@ class GradientDescent:
 		dataset = self.get_data(path)
 		x = dataset['km']
 		x = x.values.reshape((-1, 1))
-		X = self.add_one_column(x)
-		m = len(X)
+		m = len(x)
 		y = dataset['price']
 		y = y.values.reshape((-1, 1))
 		alpha = self.alpha
 		alpha = np.reshape(alpha, (2, 1))
+		self.thetas = np.array([0, 0]).reshape((-1, 1))
+		self.thetas = self.thetas.astype('float64')
 		while i < self.max_iter:
-			gradient = self.simple_gradient(X, y)
+			gradient = self.simple_gradient(x, y)
 			self.thetas -= alpha * gradient
+			#print(f"thetas : {self.thetas}")
+			#print(f"alpha : {alpha}")
+			#print(f"gradient : {gradient}")
 			i += 1
-			y_hat = self.predict_(X)
+			y_hat = self.predict_(x)
 			current_cost = (1 / (2 * m)) * np.sum((y_hat - y)**2)
 			#print(f"current cost  = {current_cost}")
 			if abs(current_cost - prev_cost) < epsilon :
@@ -91,10 +97,10 @@ class GradientDescent:
 		y = dataset['price']
 		y = y.values.reshape((-1, 1))
 		print(f"y shape: {y.shape}")
-		self.thetas = self.gradient_descent(self, path, self.alpha)
+
+		self.thetas = self.gradient_descent(path, self.alpha)
 		new_predict = np.array([new_predict]).reshape((-1, 1))
-		new_predict = scaler.transform(new_predict)
-		printf(f"new_predict: {new_predict}")
+		new_predict = StandardScaler().transform(new_predict)
 		new_y_hat = gd.predict_(new_predict)
 		
 		axs[0].plot(x_scaled, y, 'o', color='blue')
@@ -118,10 +124,9 @@ class GradientDescent:
 
 def main():
 	path = 'data.csv'
-	thetas = np.array([0, 0]).reshape((-1, 1))
-	thetas = thetas.astype('float64')
 	#scaler = StandardScaler()
 	alpha = np.array([0.001, 0.000340])
+	alpha = alpha.astype('float16')
 	new_predict = 5000
 	gd = GradientDescent(alpha = alpha)
 	#gd.gradient_descent(path, alpha)
@@ -129,7 +134,8 @@ def main():
 	#new_predict = np.array([50000]).reshape((-1, 1))
 	#new_predict = scaler.fit_transform(new_predict)
 	#new_y_hat = gd.predict_(new_predict)
-	gd.plot(path, new_predict)
+	#gd.plot(path, new_predict)
+	gd.predict_([5000])
 
 '''def main():
 	path = 'data.csv'
