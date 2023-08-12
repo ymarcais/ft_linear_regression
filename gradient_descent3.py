@@ -3,7 +3,7 @@ import numpy as np
 from dataclasses import dataclass, field
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-from sklearn.preprocessing import StandardScaler #pip install scikit-learn
+from sklearn.preprocessing import StandardScaler #pip install scikit-learnfrom line
 
 # dataclass init instances
 @dataclass
@@ -12,6 +12,7 @@ class GradientDescent:
 	thetas: list[float] = field(default_factory=lambda: [0, 0])
 	max_iter: int = 50000
 
+	#read csv
 	def get_data(self, path):
 		dataset = pd.read_csv('data.csv')
 		return dataset
@@ -116,13 +117,14 @@ class GradientDescent:
 		plt.tight_layout()
 		plt.show()
 
+		return new_y_hat
+
 def main():
 	path = 'data.csv'
 	new_predict = 50000
 	gd = GradientDescent()
 	gd.plot(path, new_predict)
-	#gd.predict_([new_predict])
-
+	
 if __name__ == "__main__":
 	main()
 
