@@ -12,14 +12,22 @@ able to use the algorithm with any other dataset.
 - prediction: y_hat = X * theta -> ft_y_hat(self, x)
 - simple_gradient(self, x, y):
 	#ŷ = hθ(x)
+
 	#tmp_theta(0) = (1/m)sum((hθ(x(i) ) − y(i)))
-	#tmp_theta(0) = (1/m)sum((hθ(x(i) ) − y(i))) * 1 
+
+	#tmp_theta(0) = (1/m)sum((hθ(x(i) ) − y(i))) * 1
+
 	#tmp_theta(0) = (1/m)sum((hθ(x(i) ) − y(i))) * x0(i) // rewrite 1 as x0(i) :
+
 	#tmp_theta(1) = (1/m)sum((hθ(x(i) ) − y(i))) * x1(i)
+
 	#Vectorisation:
 		# hθ (x) = X' * θ    // hθ (x) = θ0 + θ1 x
+  
 		# tmp_theta(j) = (1 / m) * (X' * θ - y) * X'(j)
-		# tmp_theta = (1 / m) * transpose(X') * (X' * θ - y)
-  - gradient descent()
+  
+		# tmp_theta = (1 / m) * transpose(X') * (X' * θ - y
+  
+- gradient descent()
 	def fit_(self, x, y, thetas, alpha, max_iter, epsilon=1e-3):
-<img src="./linear_regression_n_prediction.png" alt="Alt text" title="Final product" style="display: inline-block; max-width: 20px">
+<img src="./prediction_linear_regression.png" alt="Alt text" title="Final product" style="display: inline-block; max-width: 20px">
